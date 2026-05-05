@@ -429,7 +429,7 @@ ${htmlContenido}
         </div>
         
         <!-- BOTÓ "X" -->
-        <button onclick="event.stopPropagation(); document.getElementById('capaPopUp').style.display='none';" 
+        <button onclick="event.stopPropagation(); tancarPopup();" 
                 style="position: absolute; top: 15px; right: 15px; width: 35px; height: 35px; background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; cursor: pointer; font-size: 20px; font-weight: bold; z-index: 1000002; display: flex; align-items: center; justify-content: center;">
             ✕
         </button>
@@ -460,6 +460,8 @@ ${htmlContenido}
 </style>
 
 <script>
+    var popupTimeout;
+    
     function ajustarAlturaIframe() {
         var popupBox = document.getElementById('popupBox');
         var iframe = document.getElementById('miIframe');
@@ -470,8 +472,14 @@ ${htmlContenido}
         }
     }
     
+    function tancarPopup() {
+        // Cancel·lar el timeout per evitar que es torni a obrir
+        clearTimeout(popupTimeout);
+        document.getElementById('capaPopUp').style.display = 'none';
+    }
+    
     // Apareix al cap de 3 segons (3000ms)
-    setTimeout(function() {
+    popupTimeout = setTimeout(function() {
         var el = document.getElementById('capaPopUp');
         if(el) {
             el.style.display = 'flex';
