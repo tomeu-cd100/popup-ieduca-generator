@@ -329,10 +329,10 @@
             
             if (descripcion) {
                 htmlContenido = `
-                    <div style="padding: 24px; color: #1f2937; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; overflow-y: auto; flex: 0 0 auto; min-height: 150px; max-height: 220px; background: #f9fafb; border-bottom: 1px solid #e5e7eb;">
-                        <h3 style="font-size: 1.3rem; margin: 0 0 16px 0; color: #2563eb;">${titulo}</h3>
-                        ${imagen ? `<img src="${imagen}" alt="Imatge" style="width: ${imagenSize}%; max-height: 120px; object-fit: cover; border-radius: 8px; margin-bottom: 16px;">` : ''}
-                        <p style="line-height: 1.6; margin: 0;">${descripcion}</p>
+                    <div style="padding: 24px; color: #1f2937; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; overflow-y: auto; flex: 0 0 auto; min-height: 100px; max-height: 140px; background: #f9fafb; border-bottom: 1px solid #e5e7eb;">
+                        <h3 style="font-size: 1.3rem; margin: 0 0 12px 0; color: #2563eb;">${titulo}</h3>
+                        ${imagen ? `<img src="${imagen}" alt="Imatge" style="width: ${imagenSize}%; max-height: 80px; object-fit: cover; border-radius: 8px; margin-bottom: 12px;">` : ''}
+                        <p style="line-height: 1.5; margin: 0; font-size: 0.95rem;">${descripcion}</p>
                     </div>
                 `;
             }
@@ -386,10 +386,10 @@
             
             if (descripcion) {
                 htmlContenido = `        <!-- Contingut personalitzat -->
-        <div style="flex: 0 0 auto; min-height: 150px; max-height: 220px; padding: 24px; color: #1f2937; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; overflow-y: auto; background: #f9fafb; border-bottom: 1px solid #e5e7eb;">
-            <h3 style="font-size: 1.3rem; margin: 0 0 16px 0; color: #2563eb;">${titulo}</h3>
-            ${imagen ? `<img src="${imagen}" alt="Imatge" style="width: ${imagenSize}%; max-height: 120px; object-fit: cover; border-radius: 8px; margin-bottom: 16px;">` : ''}
-            <p style="line-height: 1.6; margin: 0;">${descripcion}</p>
+        <div style="flex: 0 0 auto; min-height: 100px; max-height: 140px; padding: 24px; color: #1f2937; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; overflow-y: auto; background: #f9fafb; border-bottom: 1px solid #e5e7eb;">
+            <h3 style="font-size: 1.3rem; margin: 0 0 12px 0; color: #2563eb;">${titulo}</h3>
+            ${imagen ? `<img src="${imagen}" alt="Imatge" style="width: ${imagenSize}%; max-height: 80px; object-fit: cover; border-radius: 8px; margin-bottom: 12px;">` : ''}
+            <p style="line-height: 1.5; margin: 0; font-size: 0.95rem;">${descripcion}</p>
         </div>
 `;
             }
@@ -446,6 +446,11 @@ ${htmlContenido}${iframeSection}
     
     function tancarPopup() {
         clearTimeout(popupTimeout);
+        // Pausar tots els iframes per aturar la música/vídeo
+        var iframes = document.getElementById('capaPopUp').querySelectorAll('iframe');
+        iframes.forEach(function(iframe) {
+            iframe.src = iframe.src; // Això recarrega l'iframe i l'atura
+        });
         document.getElementById('capaPopUp').style.display = 'none';
     }
     
