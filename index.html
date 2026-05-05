@@ -284,11 +284,7 @@
                 <div class="form-hint">Ajusta l'amplada de la imatge del 30% al 100%</div>
             </div>
 
-            <div class="form-group">
-                <label for="url">URL web a carregar</label>
-                <input type="text" id="url" placeholder="https://www.wikipedia.org" value="https://www.wikipedia.org">
-                <div class="form-hint">La web que apareixerà dins l'iframe</div>
-            </div>
+
         </div>
 
         <!-- RESULTADO -->
@@ -320,8 +316,7 @@
             titulo: document.getElementById('titulo'),
             descripcion: document.getElementById('descripcion'),
             imagen: document.getElementById('imagen'),
-            imagenSize: document.getElementById('imagenSize'),
-            url: document.getElementById('url')
+            imagenSize: document.getElementById('imagenSize')
         };
 
         // Actualizar en tiempo real
@@ -341,24 +336,45 @@
             const descripcion = inputs.descripcion.value;
             const imagen = inputs.imagen.value;
             const imagenSize = inputs.imagenSize.value;
-            const url = inputs.url.value || 'https://www.wikipedia.org';
 
-            // Generar contenido HTML
+            // Funció per convertir salts de línia en <br>
+            function formatText(text) {
+                return text.replace(/\n/g, '<br>');
+            }
+
+            // Generar contenido HTML del texto
             let htmlContenido = '';
-            let alturaContenido = '0%';
             
             if (descripcion) {
+                const descripcionFormated = formatText(descripcion);
                 htmlContenido = `
                     <div style="padding: 24px; color: #1f2937; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; overflow-y: auto;">
                         <h3 style="font-size: 1.3rem; margin: 0 0 16px 0; color: #2563eb;">${titulo}</h3>
                         ${imagen ? `<img src="${imagen}" alt="Imatge" style="width: ${imagenSize}%; max-height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 16px;">` : ''}
-                        <p style="line-height: 1.6; margin: 0;">${descripcion}</p>
+                        <div style="line-height: 1.6; margin: 0;">${descripcionFormated}</div>
                     </div>
                 `;
-                alturaContenido = 'auto';
+            }
+
+            // Estructura del popup: el contingut sempre ocupa tot l'espai
+            let popupContent = '';
+            
+            if (htmlContenido) {
+                // Text + imatge ocupen tot l'espai
+                popupContent = `
+                    <div style="flex: 1; padding: 24px; color: #1f2937; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; overflow-y: auto; display: flex; flex-direction: column; justify-content: flex-start;">
+                        <h3 style="font-size: 1.3rem; margin: 0 0 16px 0; color: #2563eb;">${titulo}</h3>
+                        ${imagen ? `<img src="${imagen}" alt="Imatge" style="width: ${imagenSize}%; max-height: 300px; object-fit: cover; border-radius: 8px; margin-bottom: 16px;">` : ''}
+                        <div style="line-height: 1.6; margin: 0; font-size: 1.05rem;">${formatText(descripcion)}</div>
+                    </div>
+                `;
             } else {
-                htmlContenido = '';
-                alturaContenido = '0';
+                // Res: missatge buit
+                popupContent = `
+                    <div style="flex: 1; display: flex; align-items: center; justify-content: center; color: #999; text-align: center;">
+                        <p>Afegeix contingut o imatge per veure la vista prèvia</p>
+                    </div>
+                `;
             }
 
             // Actualizar preview
@@ -371,17 +387,12 @@
                         body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; min-height: 100vh; }
                         .popup-box { position: relative; background: white; width: 90%; max-width: 800px; height: 90vh; max-height: 600px; border-radius: 12px; box-shadow: 0 15px 50px rgba(0,0,0,0.7); overflow: hidden; display: flex; flex-direction: column; }
                         .close-btn { position: absolute; top: 15px; right: 15px; width: 35px; height: 35px; background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; cursor: pointer; font-size: 20px; font-weight: bold; z-index: 1000002; display: flex; align-items: center; justify-content: center; }
-                        .text-content { ${htmlContenido ? 'flex: 0 0 auto; min-height: 150px; max-height: 220px;' : 'flex: 0 0 auto; height: 0;'} background: #f9fafb; border-bottom: 1px solid #e5e7eb; }
-                        .iframe-content { flex: 1; overflow: hidden; position: relative; }
-                        iframe { width: 100%; height: 100%; border: none; }
+                        iframe { max-width: 100%; }
                     </style>
                 </head>
                 <body>
                     <div class="popup-box">
-                        ${htmlContenido ? `<div class="text-content">${htmlContenido}</div>` : ''}
-                        <div class="iframe-content">
-                            <iframe src="${url}" frameborder="0"></iframe>
-                        </div>
+                        ${popupContent}
                         <button class="close-btn">✕</button>
                     </div>
                 </body>
@@ -399,20 +410,24 @@
             const descripcion = inputs.descripcion.value;
             const imagen = inputs.imagen.value;
             const imagenSize = inputs.imagenSize.value;
-            const url = inputs.url.value || 'https://www.wikipedia.org';
 
+            // Funció per convertir salts de línia en <br>
+            function formatText(text) {
+                return text.replace(/\n/g, '<br>');
+            }
+
+            const descripcionFormated = formatText(descripcion);
+
+            // Part de contingut de text (si existeix)
             let htmlContenido = '';
             if (descripcion) {
                 htmlContenido = `        <!-- Contingut personalitzat -->
-        <div style="flex: 0 0 auto; min-height: 150px; max-height: 220px; padding: 24px; color: #1f2937; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; overflow-y: auto; background: #f9fafb; border-bottom: 1px solid #e5e7eb;">
+        <div style="flex: 1; max-height: none; padding: 24px; color: #1f2937; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; overflow-y: auto; background: #ffffff;">
             <h3 style="font-size: 1.3rem; margin: 0 0 16px 0; color: #2563eb;">${titulo}</h3>
-            ${imagen ? `<img src="${imagen}" alt="Imatge" style="width: ${imagenSize}%; max-height: 120px; object-fit: cover; border-radius: 8px; margin-bottom: 16px;">` : ''}
-            <p style="line-height: 1.6; margin: 0;">${descripcion}</p>
+            ${imagen ? `<img src="${imagen}" alt="Imatge" style="width: ${imagenSize}%; max-height: 300px; object-fit: cover; border-radius: 8px; margin-bottom: 16px;">` : ''}
+            <div style="line-height: 1.6; margin: 0;">${descripcionFormated}</div>
         </div>
-        
-        <!-- IFRAME: Carrega la web (ocupa l'espai restant) -->`;
-            } else {
-                htmlContenido = `        <!-- IFRAME: Carrega la web (ocupa tot l'espai) -->`;
+        `;
             }
 
             const codigo = `<!-- Contenidor principal (fons fosc) -->
@@ -422,11 +437,6 @@
     <div id="popupBox" style="position: relative; background: white; width: 800px; height: 600px; border-radius: 12px; box-shadow: 0 15px 50px rgba(0,0,0,0.7); overflow: hidden; padding: 0; border: none; max-width: 90vw; max-height: 85vh; display: flex; flex-direction: column;">
         
 ${htmlContenido}
-        <div style="flex: 1; overflow: hidden; position: relative;">
-            <iframe id="miIframe" src="${url}" 
-                    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; margin: 0; padding: 0;">
-            </iframe>
-        </div>
         
         <!-- BOTÓ "X" -->
         <button onclick="event.stopPropagation(); tancarPopup();" 
@@ -462,20 +472,19 @@ ${htmlContenido}
 <script>
     var popupTimeout;
     
-    function ajustarAlturaIframe() {
-        var popupBox = document.getElementById('popupBox');
-        var iframe = document.getElementById('miIframe');
-        
-        if (popupBox && iframe) {
-            // Usar setProperty amb 'important' per superar els estils d'Ieduca
-            iframe.style.setProperty('height', '100%', 'important');
-        }
-    }
-    
     function tancarPopup() {
         // Cancel·lar el timeout per evitar que es torni a obrir
         clearTimeout(popupTimeout);
         document.getElementById('capaPopUp').style.display = 'none';
+        
+        // Pausar tots els iframes (vídeos de YouTube)
+        var iframes = document.getElementById('popupBox').querySelectorAll('iframe');
+        iframes.forEach(function(iframe) {
+            // Recarregar l'iframe per pausar el vídeo
+            var src = iframe.src;
+            iframe.src = '';
+            iframe.src = src;
+        });
     }
     
     // Apareix al cap de 3 segons (3000ms)
@@ -483,16 +492,8 @@ ${htmlContenido}
         var el = document.getElementById('capaPopUp');
         if(el) {
             el.style.display = 'flex';
-            // Ajustar iframe quan s'obri
-            setTimeout(ajustarAlturaIframe, 100);
         }
     }, 3000);
-    
-    // Ajustar quan carregui el contingut
-    document.getElementById('miIframe').onload = ajustarAlturaIframe;
-    
-    // Ajustar quan es redimensioni la finestra
-    window.addEventListener('resize', ajustarAlturaIframe);
 <\/script>`;
 
             document.getElementById('codigoContent').textContent = codigo;
