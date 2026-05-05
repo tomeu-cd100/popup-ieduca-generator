@@ -13,10 +13,12 @@
 
         :root {
             --primary: #2563eb;
+            --primary-dark: #1e40af;
             --success: #10b981;
             --light: #f3f4f6;
             --text: #1f2937;
             --border: #e5e7eb;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
         }
 
         body {
@@ -43,6 +45,7 @@
             text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
 
+        /* FORMULARI */
         .formulari {
             background: white;
             padding: 32px;
@@ -103,6 +106,7 @@
             margin-top: 6px;
         }
 
+        /* RESULTADO */
         .resultado {
             display: flex;
             flex-direction: column;
@@ -133,6 +137,7 @@
             content: '💻';
         }
 
+        /* PREVIEW */
         .preview-frame {
             width: 100%;
             height: 350px;
@@ -140,6 +145,7 @@
             border-radius: 8px;
             overflow: hidden;
             background: #f9fafb;
+            position: relative;
         }
 
         .preview-frame iframe {
@@ -158,6 +164,7 @@
             margin-top: 12px;
         }
 
+        /* CODI */
         .codigo-container {
             position: relative;
             background: #1f2937;
@@ -198,16 +205,50 @@
         .btn-copiar:hover {
             background: #059669;
             transform: translateY(-2px);
+            box-shadow: 0 8px 12px rgba(16, 185, 129, 0.3);
         }
 
         .btn-copiar.copied {
             background: #0891b2;
         }
 
+        /* RESPONSIU */
         @media (max-width: 1024px) {
             .container {
                 grid-template-columns: 1fr;
             }
+
+            h1 {
+                font-size: 2rem;
+            }
+        }
+
+        @media (max-width: 640px) {
+            body {
+                padding: 12px;
+            }
+
+            .formulari, .preview-box, .codigo-box {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .preview-frame {
+                height: 250px;
+            }
+        }
+
+        /* ANIMACIONS */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .loading {
+            animation: pulse 2s infinite;
         }
     </style>
 </head>
@@ -228,7 +269,7 @@
             <div class="form-group">
                 <label for="descripcion">Descripció / Text</label>
                 <textarea id="descripcion" placeholder="Escriu el contingut que vols mostrar...">Aquí pots posar la informació que vulguis destacar als alumnes.</textarea>
-                <div class="form-hint">Opcional - si deixar en blanc, només mostrará la web</div>
+                <div class="form-hint">Opcional - si deixar en blanc, carregarà directament la web</div>
             </div>
 
             <div class="form-group">
@@ -244,9 +285,9 @@
             </div>
 
             <div class="form-group">
-                <label for="url">URL web a carregar (opcional)</label>
-                <input type="text" id="url" placeholder="https://www.youtube.com/watch?v=... o qualsevol web">
-                <div class="form-hint">Deixa en blanc si només vols mostrar el text i la imatge</div>
+                <label for="url">URL web a carregar</label>
+                <input type="text" id="url" placeholder="https://www.wikipedia.org" value="https://www.wikipedia.org">
+                <div class="form-hint">La web que apareixerà dins l'iframe</div>
             </div>
         </div>
 
@@ -283,68 +324,44 @@
             url: document.getElementById('url')
         };
 
+        // Actualizar en tiempo real
         Object.values(inputs).forEach(input => {
             input.addEventListener('input', actualizarPreview);
             input.addEventListener('change', actualizarPreview);
         });
 
+        // Actualizar el valor mostrado del slider
         document.getElementById('imagenSize').addEventListener('input', function() {
             document.getElementById('sizeValue').textContent = this.value;
             actualizarPreview();
         });
-
-        function convertirYouTubeURL(url) {
-            if (!url) return '';
-            
-            if (url.includes('youtube.com/watch?v=')) {
-                const videoId = url.split('v=')[1].split('&')[0];
-                return `https://www.youtube.com/embed/${videoId}`;
-            }
-            
-            if (url.includes('youtube.com/embed/')) {
-                return url;
-            }
-            
-            if (url.includes('youtu.be/')) {
-                const videoId = url.split('youtu.be/')[1].split('?')[0];
-                return `https://www.youtube.com/embed/${videoId}`;
-            }
-            
-            return url;
-        }
 
         function actualizarPreview() {
             const titulo = inputs.titulo.value || 'Contingut Destacat';
             const descripcion = inputs.descripcion.value;
             const imagen = inputs.imagen.value;
             const imagenSize = inputs.imagenSize.value;
-            let url = inputs.url.value;
-            
-            if (url) {
-                url = convertirYouTubeURL(url);
-            }
+            const url = inputs.url.value || 'https://www.wikipedia.org';
 
+            // Generar contenido HTML
             let htmlContenido = '';
-            let iframeHTML = '';
+            let alturaContenido = '0%';
             
             if (descripcion) {
                 htmlContenido = `
-                    <div style="padding: 24px; color: #1f2937; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; overflow-y: auto; flex: 0 0 auto; min-height: 100px; max-height: 140px; background: #f9fafb; border-bottom: 1px solid #e5e7eb;">
-                        <h3 style="font-size: 1.3rem; margin: 0 0 12px 0; color: #2563eb;">${titulo}</h3>
-                        ${imagen ? `<img src="${imagen}" alt="Imatge" style="width: ${imagenSize}%; max-height: 80px; object-fit: cover; border-radius: 8px; margin-bottom: 12px;">` : ''}
-                        <p style="line-height: 1.5; margin: 0; font-size: 0.95rem;">${descripcion}</p>
+                    <div style="padding: 24px; color: #1f2937; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; overflow-y: auto;">
+                        <h3 style="font-size: 1.3rem; margin: 0 0 16px 0; color: #2563eb;">${titulo}</h3>
+                        ${imagen ? `<img src="${imagen}" alt="Imatge" style="width: ${imagenSize}%; max-height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 16px;">` : ''}
+                        <p style="line-height: 1.6; margin: 0;">${descripcion}</p>
                     </div>
                 `;
-            }
-            
-            if (url) {
-                iframeHTML = `
-                    <div style="flex: 1; overflow: hidden; position: relative; background: #000;">
-                        <iframe src="${url}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="width: 100%; height: 100%; border: none;"></iframe>
-                    </div>
-                `;
+                alturaContenido = 'auto';
+            } else {
+                htmlContenido = '';
+                alturaContenido = '0';
             }
 
+            // Actualizar preview
             const previewHTML = `
                 <!DOCTYPE html>
                 <html lang="ca">
@@ -354,12 +371,17 @@
                         body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; min-height: 100vh; }
                         .popup-box { position: relative; background: white; width: 90%; max-width: 800px; height: 90vh; max-height: 600px; border-radius: 12px; box-shadow: 0 15px 50px rgba(0,0,0,0.7); overflow: hidden; display: flex; flex-direction: column; }
                         .close-btn { position: absolute; top: 15px; right: 15px; width: 35px; height: 35px; background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; cursor: pointer; font-size: 20px; font-weight: bold; z-index: 1000002; display: flex; align-items: center; justify-content: center; }
+                        .text-content { ${htmlContenido ? 'flex: 0 0 auto; min-height: 150px; max-height: 220px;' : 'flex: 0 0 auto; height: 0;'} background: #f9fafb; border-bottom: 1px solid #e5e7eb; }
+                        .iframe-content { flex: 1; overflow: hidden; position: relative; }
+                        iframe { width: 100%; height: 100%; border: none; }
                     </style>
                 </head>
                 <body>
                     <div class="popup-box">
-                        ${htmlContenido}
-                        ${iframeHTML}
+                        ${htmlContenido ? `<div class="text-content">${htmlContenido}</div>` : ''}
+                        <div class="iframe-content">
+                            <iframe src="${url}" frameborder="0"></iframe>
+                        </div>
                         <button class="close-btn">✕</button>
                     </div>
                 </body>
@@ -367,6 +389,8 @@
             `;
 
             document.getElementById('previewIframe').srcdoc = previewHTML;
+
+            // Generar codi HTML
             generarCodi();
         }
 
@@ -375,34 +399,20 @@
             const descripcion = inputs.descripcion.value;
             const imagen = inputs.imagen.value;
             const imagenSize = inputs.imagenSize.value;
-            let url = inputs.url.value;
-            
-            if (url) {
-                url = convertirYouTubeURL(url);
-            }
+            const url = inputs.url.value || 'https://www.wikipedia.org';
 
             let htmlContenido = '';
-            let iframeSection = '';
-            
             if (descripcion) {
                 htmlContenido = `        <!-- Contingut personalitzat -->
-        <div style="flex: 0 0 auto; min-height: 100px; max-height: 140px; padding: 24px; color: #1f2937; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; overflow-y: auto; background: #f9fafb; border-bottom: 1px solid #e5e7eb;">
-            <h3 style="font-size: 1.3rem; margin: 0 0 12px 0; color: #2563eb;">${titulo}</h3>
-            ${imagen ? `<img src="${imagen}" alt="Imatge" style="width: ${imagenSize}%; max-height: 80px; object-fit: cover; border-radius: 8px; margin-bottom: 12px;">` : ''}
-            <p style="line-height: 1.5; margin: 0; font-size: 0.95rem;">${descripcion}</p>
+        <div style="flex: 0 0 auto; min-height: 150px; max-height: 220px; padding: 24px; color: #1f2937; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; overflow-y: auto; background: #f9fafb; border-bottom: 1px solid #e5e7eb;">
+            <h3 style="font-size: 1.3rem; margin: 0 0 16px 0; color: #2563eb;">${titulo}</h3>
+            ${imagen ? `<img src="${imagen}" alt="Imatge" style="width: ${imagenSize}%; max-height: 120px; object-fit: cover; border-radius: 8px; margin-bottom: 16px;">` : ''}
+            <p style="line-height: 1.6; margin: 0;">${descripcion}</p>
         </div>
-`;
-            }
-            
-            if (url) {
-                iframeSection = `        <div style="flex: 1; overflow: hidden; position: relative; background: #000;">
-            <iframe id="miIframe" src="${url}" 
-                    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; margin: 0; padding: 0;"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowfullscreen>
-            </iframe>
-        </div>
-`;
+        
+        <!-- IFRAME: Carrega la web (ocupa l'espai restant) -->`;
+            } else {
+                htmlContenido = `        <!-- IFRAME: Carrega la web (ocupa tot l'espai) -->`;
             }
 
             const codigo = `<!-- Contenidor principal (fons fosc) -->
@@ -411,7 +421,13 @@
     <!-- Caixa del PopUp (800x600 amb adaptació responsive) -->
     <div id="popupBox" style="position: relative; background: white; width: 800px; height: 600px; border-radius: 12px; box-shadow: 0 15px 50px rgba(0,0,0,0.7); overflow: hidden; padding: 0; border: none; max-width: 90vw; max-height: 85vh; display: flex; flex-direction: column;">
         
-${htmlContenido}${iframeSection}
+${htmlContenido}
+        <div style="flex: 1; overflow: hidden; position: relative;">
+            <iframe id="miIframe" src="${url}" 
+                    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; margin: 0; padding: 0;">
+            </iframe>
+        </div>
+        
         <!-- BOTÓ "X" -->
         <button onclick="event.stopPropagation(); tancarPopup();" 
                 style="position: absolute; top: 15px; right: 15px; width: 35px; height: 35px; background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; cursor: pointer; font-size: 20px; font-weight: bold; z-index: 1000002; display: flex; align-items: center; justify-content: center;">
@@ -422,10 +438,12 @@ ${htmlContenido}${iframeSection}
 </div>
 
 <style>
+    /* Reset CSS */
     * {
         box-sizing: border-box;
     }
     
+    /* Media query per a mòbils i tablets */
     @media (max-width: 900px) {
         #popupBox {
             width: 95vw !important;
@@ -444,22 +462,37 @@ ${htmlContenido}${iframeSection}
 <script>
     var popupTimeout;
     
+    function ajustarAlturaIframe() {
+        var popupBox = document.getElementById('popupBox');
+        var iframe = document.getElementById('miIframe');
+        
+        if (popupBox && iframe) {
+            // Usar setProperty amb 'important' per superar els estils d'Ieduca
+            iframe.style.setProperty('height', '100%', 'important');
+        }
+    }
+    
     function tancarPopup() {
+        // Cancel·lar el timeout per evitar que es torni a obrir
         clearTimeout(popupTimeout);
-        // Pausar tots els iframes per aturar la música/vídeo
-        var iframes = document.getElementById('capaPopUp').querySelectorAll('iframe');
-        iframes.forEach(function(iframe) {
-            iframe.src = iframe.src; // Això recarrega l'iframe i l'atura
-        });
         document.getElementById('capaPopUp').style.display = 'none';
     }
     
+    // Apareix al cap de 3 segons (3000ms)
     popupTimeout = setTimeout(function() {
         var el = document.getElementById('capaPopUp');
         if(el) {
             el.style.display = 'flex';
+            // Ajustar iframe quan s'obri
+            setTimeout(ajustarAlturaIframe, 100);
         }
     }, 3000);
+    
+    // Ajustar quan carregui el contingut
+    document.getElementById('miIframe').onload = ajustarAlturaIframe;
+    
+    // Ajustar quan es redimensioni la finestra
+    window.addEventListener('resize', ajustarAlturaIframe);
 <\/script>`;
 
             document.getElementById('codigoContent').textContent = codigo;
@@ -479,6 +512,7 @@ ${htmlContenido}${iframeSection}
             });
         }
 
+        // Inicializar
         actualizarPreview();
     </script>
 </body>
