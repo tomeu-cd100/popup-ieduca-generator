@@ -284,6 +284,12 @@
                 <div class="form-hint">Ajusta l'amplada de la imatge del 30% al 100%</div>
             </div>
 
+            <div class="form-group">
+                <label for="dataPublicacio">Data de publicació</label>
+                <input type="date" id="dataPublicacio">
+                <div class="form-hint">Selecciona el dia que vols que aparegui el popup. Si no selecciones cap data, el popup no apareixerà.</div>
+            </div>
+
 
         </div>
 
@@ -316,7 +322,8 @@
             titulo: document.getElementById('titulo'),
             descripcion: document.getElementById('descripcion'),
             imagen: document.getElementById('imagen'),
-            imagenSize: document.getElementById('imagenSize')
+            imagenSize: document.getElementById('imagenSize'),
+            dataPublicacio: document.getElementById('dataPublicacio')
         };
 
         // Actualizar en tiempo real
@@ -388,10 +395,12 @@
                         .popup-box { position: relative; background: white; width: 90%; max-width: 800px; height: 90vh; max-height: 600px; border-radius: 12px; box-shadow: 0 15px 50px rgba(0,0,0,0.7); overflow: hidden; display: flex; flex-direction: column; }
                         .close-btn { position: absolute; top: 15px; right: 15px; width: 35px; height: 35px; background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; cursor: pointer; font-size: 20px; font-weight: bold; z-index: 1000002; display: flex; align-items: center; justify-content: center; }
                         iframe { max-width: 100%; }
+                        .data-info { position: absolute; top: 15px; left: 15px; background: rgba(0,0,0,0.6); color: white; padding: 8px 12px; border-radius: 6px; font-size: 0.85rem; z-index: 1000001; }
                     </style>
                 </head>
                 <body>
                     <div class="popup-box">
+                        ${inputs.dataPublicacio.value ? `<div class="data-info">📅 Publicat: ${new Date(inputs.dataPublicacio.value).toLocaleDateString('ca-ES', { year: 'numeric', month: 'long', day: 'numeric' })}</div>` : ''}
                         ${popupContent}
                         <button class="close-btn">✕</button>
                     </div>
@@ -410,6 +419,7 @@
             const descripcion = inputs.descripcion.value;
             const imagen = inputs.imagen.value;
             const imagenSize = inputs.imagenSize.value;
+            const dataPublicacio = inputs.dataPublicacio.value;
 
             // Funció per convertir salts de línia en <br>
             function formatText(text) {
@@ -430,8 +440,30 @@
         `;
             }
 
+        // Generar la lògica de data
+            let logicaData = '';
+            if (dataPublicacio) {
+                logicaData = `    var dataPublicacio = new Date('${dataPublicacio}');
+    var avui = new Date();
+    
+    // Comparar només la data (sense hora)
+    var esMateixDia = avui.getFullYear() === dataPublicacio.getFullYear() && 
+                      avui.getMonth() === dataPublicacio.getMonth() && 
+                      avui.getDate() === dataPublicacio.getDate();
+    
+    if (!esMateixDia) {
+        // No és el dia programat, no fer res
+        return;
+    }
+    
+    // Si arribem aquí, és el dia correcte - mostrar popup`;
+            } else {
+                logicaData = `    // Cap data seleccionada, no mostrar popup
+    return;`;
+            }
+
             const codigo = `<!-- Contenidor principal (fons fosc) -->
-<div id="capaPopUp" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.85); z-index: 999999; justify-content: center; align-items: center; display: flex;">
+<div id="capaPopUp" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.85); z-index: 999999; justify-content: center; align-items: center;">
     
     <!-- Caixa del PopUp (800x600 amb adaptació responsive) -->
     <div id="popupBox" style="position: relative; background: white; width: 800px; height: 600px; border-radius: 12px; box-shadow: 0 15px 50px rgba(0,0,0,0.7); overflow: hidden; padding: 0; border: none; max-width: 90vw; max-height: 85vh; display: flex; flex-direction: column;">
@@ -472,6 +504,18 @@ ${htmlContenido}
 <script>
     var popupTimeout;
     
+    function verificarDataICarregar() {
+${logicaData}
+        
+        // El popup es mostra después de 3 segons
+        popupTimeout = setTimeout(function() {
+            var el = document.getElementById('capaPopUp');
+            if(el) {
+                el.style.display = 'flex';
+            }
+        }, 3000);
+    }
+    
     function tancarPopup() {
         // Cancel·lar el timeout per evitar que es torni a obrir
         clearTimeout(popupTimeout);
@@ -487,13 +531,8 @@ ${htmlContenido}
         });
     }
     
-    // Apareix al cap de 3 segons (3000ms)
-    popupTimeout = setTimeout(function() {
-        var el = document.getElementById('capaPopUp');
-        if(el) {
-            el.style.display = 'flex';
-        }
-    }, 3000);
+    // Iniciar la verificació i si passa, mostrar popup
+    verificarDataICarregar();
 <\/script>`;
 
             document.getElementById('codigoContent').textContent = codigo;
